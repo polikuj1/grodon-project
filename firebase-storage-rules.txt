@@ -1,0 +1,48 @@
+Firebase Storage 安全規則配置
+
+=== 開發/測試環境規則（允許所有存取）===
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /{allPaths=**} {
+      allow read, write: if true;
+    }
+  }
+}
+
+=== 生產環境規則（建議使用）===
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    // 允許讀取所有檔案
+    match /{allPaths=**} {
+      allow read: if true;
+    }
+    
+    // 只允許已認證用戶上傳到 photos 資料夾
+    match /photos/{filename} {
+      allow write: if request.auth != null
+                   && request.resource.size < 10 * 1024 * 1024  // 10MB 限制
+                   && request.resource.contentType.matches('image/.*');  // 只允許圖片
+    }
+    
+    // 允許已認證用戶刪除自己上傳的檔案
+    match /photos/{filename} {
+      allow delete: if request.auth != null;
+    }
+  }
+}
+
+=== 設定步驟 ===
+1. 前往 Firebase Console: https://console.firebase.google.com/
+2. 選擇專案: nodejs-4951c
+3. 左側選單 → Storage
+4. 點擊上方的 "Rules" 標籤
+5. 將上述規則貼上並點擊 "發布"
+
+=== 疑難排解 ===
+如果仍有 CORS 錯誤：
+1. 確認 Firebase Storage 規則已正確設定
+2. 等待 5-10 分鐘讓規則生效
+3. 清除瀏覽器快取
+4. 檢查是否在正確的 Firebase 專案中設定規則
