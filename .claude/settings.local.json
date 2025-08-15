@@ -10,5 +10,18 @@
       "Bash(curl:*)"
     ],
     "deny": []
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Read",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "say 'all done'"
+          }
+        ]
+      }
+    ]
   }
 }
